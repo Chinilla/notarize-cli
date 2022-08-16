@@ -1,6 +1,6 @@
 {
   "name": "@chia-network/notarize-cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Notarize a macOS app from the command line",
   "keywords": [
     "notarize",
@@ -9,15 +9,15 @@
     "staple",
     "macos"
   ],
-  "homepage": "https://github.com/bacongravy/notarize-cli",
-  "bugs": "https://github.com/bacongravy/notarize-cli/issues",
-  "repository": "bacongravy/notarize-cli",
-  "license": "ISC",
-  "author": "David Kramer <bacongravy@icloud.com>",
-  "main": "src/index.js",
   "bin": {
     "notarize-cli": "./bin/run"
   },
+  "homepage": "https://github.com/chia-network/notarize-cli",
+  "bugs": "https://github.com/chia-network/notarize-cli/issues",
+  "repository": "chia-network/notarize-cli",
+  "license": "ISC",
+  "author": "Jack Nelson <j.nelson@chia.net>",
+  "main": "src/commands/index.js",
   "files": [
     "/bin",
     "/src"
@@ -27,13 +27,11 @@
     "test": "echo NO TESTS"
   },
   "dependencies": {
-    "@oclif/command": "^1.8.0",
-    "@oclif/config": "^1.17.0",
-    "@oclif/plugin-help": "^2.2.3",
-    "execa": "^4.1.0"
+    "@oclif/core": "^1.13.10",
+    "@oclif/plugin-version": "^1.1.1",
+    "execa": "^5.1.1"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.26.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-oclif": "^3.1.0",
@@ -45,9 +43,20 @@
     "prettier": "^2.3.2"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=14.0.0"
   },
   "oclif": {
-    "bin": "notarize-cli"
+    "plugins": [
+      "@oclif/plugin-version"
+    ],
+    "bin": "notarize-cli",
+    "default": ".",
+    "commands": "./src/commands",
+    "additionalHelpFlags": [
+      "-h"
+    ],
+    "additionalVersionFlags": [
+      "-v"
+    ]
   }
 }

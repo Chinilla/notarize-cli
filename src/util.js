@@ -23,33 +23,34 @@ const getNotarizationInfo = async (requestUuid, username, password) => {
     tryLegacy = true;
     console.error(`Could not parse as JSON. Will try legacy mode.`);
   }
+  const parseLegacyNotarizationInfo = (response) => {
+    const uuidMatches = response.match(/RequestUUID.\s(.*)\s*/);
+    const dateMatches = response.match(/Date.\s(.*)\s*/);
+    const statusMatches = response.match(/Status.\s(.*)\s/);
+    const logFileURLMatches = response.match(/LogFileURL.\s(.*)\s/);
+    const statusCodeMatches = response.match(/Status Code.\s(.*)\s/);
+    const statusMessageMatches = response.match(/Status Message.\s(.*)\s/);
+
+    return {
+      RequestUUID: uuidMatches ? uuidMatches[1] : '',
+      Date: dateMatches ? dateMatches[1] : '',
+      Status: statusMatches ? statusMatches[1] : '',
+      LogFileURL: logFileURLMatches ? logFileURLMatches[1] : '',
+      StatusCode: statusCodeMatches ? statusCodeMatches[1] : '',
+      StatusMessage: statusMessageMatches ? statusMessageMatches[1] : '',
+    };
+  };
 
   if (tryLegacy) {
     try {
-      notarizationInfo = parseLegacyNotarizationInfo(stderr)
-    } catch (e) {
-      console.error(`Could not parse as legacy key/value pairs: ${e} stdout: ${stdout}. stderr: ${stderr}`);
+      notarizationInfo = parseLegacyNotarizationInfo(stderr);
+    } catch (error) {
+      console.error(
+        `Could not parse as legacy key/value pairs: ${error} stdout: ${stdout}. stderr: ${stderr}`,
+      );
     }
   }
   return notarizationInfo;
-};
-
-const parseLegacyNotarizationInfo = (response) => {
-  let uuidMatches = response.match(/RequestUUID.\s(.*)\s*/)
-  let dateMatches = response.match(/Date.\s(.*)\s*/)
-  let statusMatches = response.match(/Status.\s(.*)\s/)
-  let logFileURLMatches = response.match(/LogFileURL.\s(.*)\s/)
-  let statusCodeMatches = response.match(/Status Code.\s(.*)\s/)
-  let statusMessageMatches = response.match(/Status Message.\s(.*)\s/)
-
-  return {
-    RequestUUID: uuidMatches ? uuidMatches[1] : '',
-    Date: dateMatches ? dateMatches[1] : '',
-    Status: statusMatches ? statusMatches[1] : '',
-    LogFileURL: logFileURLMatches ? logFileURLMatches[1] : '',
-    StatusCode: statusCodeMatches ? statusCodeMatches[1] : '',
-    StatusMessage: statusMessageMatches ? statusMessageMatches[1] : '',
-  }
 };
 
 const getRequestStatus = async (requestUuid, username, password) => {
@@ -59,48 +60,56 @@ const getRequestStatus = async (requestUuid, username, password) => {
 
 const notarizeApp = async (file, bundleId, provider, username, password) => {
   let failed;
-  var xcrun_args = ['altool', '--notarize-app'];
+  const xcrunArgs = ['altool', '--notarize-app'];
   if (file !== undefined) {
-    xcrun_args.push('--file', file);
+    xcrunArgs.push('--file', file);
   }
   if (bundleId !== undefined) {
-    xcrun_args.push('--primary-bundle-id', bundleId);
+    xcrunArgs.push('--primary-bundle-id', bundleId);
   }
   if (provider !== undefined) {
-    xcrun_args.push('--asc-provider', provider);
+    xcrunArgs.push('--asc-provider', provider);
   }
   if (username !== undefined) {
-    xcrun_args.push('--username', username);
+    xcrunArgs.push('--username', username);
   }
   if (password !== undefined) {
-    xcrun_args.push('--password', password);
+    xcrunArgs.push('--password', password);
   }
-  xcrun_args.push('--output-format', 'json');
-  const { stdout, stderr } = await execa('xcrun', xcrun_args).catch((e) => { failed = true; return e });
-  let requestUuid, error;
+  xcrunArgs.push('--output-format', 'json');
+  const { stdout, stderr } = await execa('xcrun', xcrunArgs).catch((error2) => {
+    failed = true;
+    return error2;
+  });
+  let requestUuid;
+  let error;
   if (failed) {
     try {
-      error = JSON.parse(stdout)['product-errors'][0].message
-    } catch (e) {
-      console.error(`Error parsing product errors: ${e}. Stdout: ${stdout}. Stderr: ${stderr}`)
+      error = JSON.parse(stdout)['product-errors'][0].message;
+    } catch (error2) {
+      console.error(
+        `Error parsing product errors: ${error2}. Stdout: ${stdout}. Stderr: ${stderr}`,
+      );
     }
   } else {
-    let parseLegacyUUID = false
+    let parseLegacyUUID = false;
     try {
       requestUuid = JSON.parse(stdout)['notarization-upload'].RequestUUID;
-    } catch (e) {
-      parseLegacyUUID = true
-      console.error(`Error parsing UUID from JSON. Will try legacy mode.`)
+    } catch (error2) {
+      parseLegacyUUID = true;
+      console.error(`Error parsing UUID from JSON. Will try legacy mode.`);
     }
 
     if (parseLegacyUUID === true) {
       try {
         // Older versions of MacOS don't support the json output, so parse the structured output
         // RequestUUID = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-        const pattern = /RequestUUID\s=\s(.*)/
-        requestUuid = stderr.match(pattern)[1]
-      } catch (e) {
-        console.error(`Error parsing UUID from structured data: ${e}. Stdout: ${stdout}. Stderr: ${stderr}`)
+        const pattern = /RequestUUID\s=\s(.*)/;
+        [, requestUuid] = stderr.match(pattern);
+      } catch (error2) {
+        console.error(
+          `Error parsing UUID from structured data: ${error2}. Stdout: ${stdout}. Stderr: ${stderr}`,
+        );
       }
     }
   }
