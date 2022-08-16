@@ -24,14 +24,12 @@ jobs:
         run: echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
 
       - name: Update version in package.json
-        working-directory: ${{ github.workspace }}/js-bindings
         env:
           SOURCE_TAG: ${{ steps.version_info.outputs.SOURCE_TAG }}
         run: |
           jq --arg VER "$SOURCE_TAG" '.version=$VER' package.json > temp.json && mv temp.json package.json
 
       - name: Publish
-        working-directory: ${{ github.workspace }}/js_build/js-bindings
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -40,4 +38,4 @@ jobs:
 
       - name: Cleanup
         run:
-          rm ${{ github.workspace }}/js_build/js-bindings/.npmrc || true
+          rm ${{ github.workspace }}/.npmrc || true
