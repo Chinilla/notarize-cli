@@ -9,6 +9,9 @@
     "staple",
     "macos"
   ],
+  "bin": {
+    "notarize-cli": "./bin/run"
+  },
   "homepage": "https://github.com/chia-network/notarize-cli",
   "bugs": "https://github.com/chia-network/notarize-cli/issues",
   "repository": "chia-network/notarize-cli",
@@ -49,7 +52,11 @@
     "bin": "notarize-cli",
     "default": ".",
     "commands": "./src/commands",
-    "additionalHelpFlags": ["-h"],
-    "additionalVersionFlags": ["-v"]
+    "additionalHelpFlags": [
+      "-h"
+    ],
+    "additionalVersionFlags": [
+      "-v"
+    ]
   }
 }
