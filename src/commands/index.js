@@ -1,4 +1,4 @@
-const { Command, flags } = require('@oclif/command');
+const { Command, Flags } = require('@oclif/core');
 
 const {
   sleep,
@@ -6,12 +6,12 @@ const {
   getRequestStatus,
   notarizeApp,
   staple,
-} = require('./util');
+} = require('../util');
 
 class NotarizeCliCommand extends Command {
   async run() {
     // eslint-disable-next-line no-shadow
-    const { flags } = this.parse(NotarizeCliCommand);
+    const { flags } = await this.parse(NotarizeCliCommand);
     process.stdout.write('Uploading file... ');
     const { requestUuid, error } = await notarizeApp(
       flags.file,
@@ -21,10 +21,12 @@ class NotarizeCliCommand extends Command {
       flags.password,
     );
     if (!requestUuid) {
-        console.log('failed');
-        console.error('Error:', error ?? 'could not upload file for notarization');
-        this.exit(1);
-      } else {
+      console.log('failed');
+      console.error(
+        `Error: ${error || 'could not upload file for notarization'}`,
+      );
+      this.exit(1);
+    } else {
       console.log('done');
       let requestStatus = 'in progress';
 
@@ -51,7 +53,7 @@ class NotarizeCliCommand extends Command {
         }
       }
       if (requestStatus === 'success' && !flags['no-staple']) {
-        staple(flags.file);
+        await staple(flags.file);
       }
       const notarizationInfo = await getNotarizationInfo(
         requestUuid,
@@ -74,35 +76,35 @@ NotarizeCliCommand.description = `Notarize a macOS app from the command line
 `;
 
 NotarizeCliCommand.flags = {
-  file: flags.string({
+  file: Flags.string({
     description: 'path to the file to notarize',
     required: true,
   }),
-  'bundle-id': flags.string({
+  'bundle-id': Flags.string({
     description: 'bundle id of the app to notarize',
     required: true,
     env: 'PRODUCT_BUNDLE_IDENTIFIER',
   }),
-  'asc-provider': flags.string({
+  'asc-provider': Flags.string({
     description: 'asc provider to use for app notarization',
     required: false,
   }),
-  username: flags.string({
+  username: Flags.string({
     description: 'username to use for authentication',
     required: true,
     env: 'NOTARIZE_USERNAME',
   }),
-  password: flags.string({
+  password: Flags.string({
     description: 'password to use for authentication',
     required: true,
     env: 'NOTARIZE_PASSWORD',
   }),
-  'no-staple': flags.boolean({
+  'no-staple': Flags.boolean({
     description: 'disable automatic stapling',
-    default: false,
+    default: () => false,
   }),
-  version: flags.version({ char: 'v' }),
-  help: flags.help({ char: 'h' }),
+  version: Flags.version({ char: 'v' }),
+  help: Flags.help({ char: 'h' }),
 };
 
 module.exports = NotarizeCliCommand;
