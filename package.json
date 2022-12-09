@@ -1,5 +1,5 @@
 {
-  "name": "@chia-network/notarize-cli",
+  "name": "@chinilla/notarize-cli",
   "version": "0.2.2",
   "description": "Notarize a macOS app from the command line",
   "keywords": [
@@ -12,11 +12,11 @@
   "bin": {
     "notarize-cli": "./bin/run"
   },
-  "homepage": "https://github.com/chia-network/notarize-cli",
-  "bugs": "https://github.com/chia-network/notarize-cli/issues",
-  "repository": "chia-network/notarize-cli",
+  "homepage": "https://github.com/chinilla/notarize-cli",
+  "bugs": "https://github.com/chinilla/notarize-cli/issues",
+  "repository": "chinilla/notarize-cli",
   "license": "ISC",
-  "author": "Jack Nelson <j.nelson@chia.net>",
+  "author": "Jack Nelson <j.nelson@chinilla.net>",
   "main": "src/commands/index.js",
   "files": [
     "/bin",
